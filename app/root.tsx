@@ -1,4 +1,4 @@
-import { Outlet, LiveReload, Link } from "@remix-run/react";
+import { Outlet, LiveReload, Link, Scripts, Meta } from "@remix-run/react";
 import React from "react";
 import globalCSS from "~/styles/global.css";
 
@@ -39,11 +39,14 @@ function Document ({ children, title }: DocumentProps) {
         <link rel="preconnect" href="https://fonts.googleapis.com"></link>
         <link rel="preconnect" href="https://fonts.gstatic.com"></link>
         <link href="https://fonts.googleapis.com/css2?family=New+Rocker&display=swap" rel="stylesheet"></link>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
         <title>Walk this way</title>
         <meta charSet="utf-8" />
+        <Meta/>
       </head>
       <body className="bg-black text-white">
         {children}
+        <Scripts />
         { process.env.NODE_ENV === "development" && <LiveReload /> }
       </body>
     </html>
