@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id             Int        @id @default(autoincrement())
+  name           String
+  email          String     @unique
+  role           String
+  profilePicture String
+  performerId    Int?       @unique
+  locationId     Int?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  performer      Performer? @relation(fields: [performerId], references: [id])
+  location       Location?  @relation(fields: [locationId], references: [id])
+  articles       Article[]
+  comments       Comment[]
+}
+
+model Location {
+  id        Int       @id @default(autoincrement())
+  name      String
+  latitude  Float
+  longitude Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profiles  Profile[]
+  articles  Article[]
+  gigs      Gig[]
+}
+
+model Performer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  bio       String
+  profileId Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profile   Profile?
+  articles  Article[]
+  gigId     Int
+  gig       Gig       @relation(fields: [gigId], references: [id])
+}
+
+model Article {
+  id          Int        @id @default(autoincrement())
+  title       String
+  content     String
+  eventTime   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  writerId    Int
+  performerId Int?
+  locationId  Int
+  categoryId  Int?
+  writer      Profile    @relation(fields: [writerId], references: [id])
+  performer   Performer? @relation(fields: [performerId], references: [id])
+  location    Location   @relation(fields: [locationId], references: [id])
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  likes       Like[]
+  comments    Comment[]
+}
+
+model Like {
+  id            Int      @id @default(autoincrement())
+  userEmailOrIP String
+  createdAt     DateTime @default(now())
+  articleId     Int
+  article       Article  @relation(fields: [articleId], references: [id])
+}
+
+model Comment {
+  id              Int       @id @default(autoincrement())
+  content         String
+  parentCommentId Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  writerId        Int
+  articleId       Int
+  writer          Profile   @relation(fields: [writerId], references: [id])
+  article         Article   @relation(fields: [articleId], references: [id])
+  parentComment   Comment?  @relation("ChildComments", fields: [parentCommentId], references: [id])
+  childComments   Comment[] @relation("ChildComments")
+}
+
+model Category {
+  id      Int       @id @default(autoincrement())
+  name    String
+  Article Article[]
+}
+
+model Gig {
+  id          Int         @id @default(autoincrement())
+  name        String
+  picture     String
+  description String
+  dateTime    DateTime
+  locationId  Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  location    Location    @relation(fields: [locationId], references: [id])
+  performers  Performer[]
+}
