@@ -1,3 +1,5 @@
+import { ParallaxBanner } from "react-scroll-parallax"; // TODO: implement this
+
 
 export function Hero({cover, title, content}: {cover?: string, title?: string, content?: string}) {
     return (
@@ -8,7 +10,6 @@ export function Hero({cover, title, content}: {cover?: string, title?: string, c
           {content && <p> {content} </p>}
         </div>
         <p className="absolute inset-x-0 bottom-20 pb-20 text-shadow text-2xl animate-bounce-slow">Čitaj dalje</p>
-       </div>
+      </div>
     )
   }
-  

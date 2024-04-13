@@ -29,10 +29,10 @@ const handleScrollBackwards = (event: React.MouseEvent<HTMLDivElement>): void =>
     event.currentTarget.parentNode ? (event.currentTarget.parentNode as HTMLElement).scrollBy({left: -screenWidth, behavior: "smooth"}) : null;
 }
   
-export function Carousel({title, articles}: {title:string, articles: Article[]}) {
+export function Carousel({name, articles}: {name:string, articles: Article[]}) {
     return (
       <div className="relative">
-        <h2 className="ps-20 pt-20 text-4xl">{title}</h2>
+        <h2 className="ps-20 pt-20 text-4xl">{name}</h2>
         <div className="overflow-x-scroll">
           <div className="scrollBack flex flex-center" onClick={ handleScrollBackwards}><i className="fa fa-chevron-left"></i></div>
             <div className="carousel">

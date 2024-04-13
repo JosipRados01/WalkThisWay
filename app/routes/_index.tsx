@@ -1,8 +1,9 @@
-import type { MetaFunction } from "@remix-run/node";
-import { ParallaxBanner } from "react-scroll-parallax";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import headerImage from "~/images/naslovna.jpg";
 import { Hero } from "~/components/Hero";
 import { Carousel } from "~/components/Carousel";
+import { Link, useLoaderData } from "@remix-run/react";
+import { db } from "~/utils/db.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -11,11 +12,65 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export type Article = {
+  id: number;
+  cover: string;
+  title: string;
+  content: string;
+};
+
+type Category = {
+  id: number;
+  name: string; 
+  articles: Article[];
+}
+
+
+export const loader: LoaderFunction = async () => {
+  const articles = await db.article.findMany({
+    select: {
+      id: true,
+      cover: true,
+      title: true,
+      content: true,
+    },
+    take: 3, // Select only 3 articles
+  }) as Article[];
+
+  const categories = await db.category.findMany({
+    select: {
+      id: true,
+      name: true,
+      articles: {
+        select: {
+          id: true,
+          title: true,
+          content: true,
+        },
+        take: 10, // Select only 10 articles
+      },
+    }
+  }) as Category[];
+
+  // generate the cover urls for the articles and the articles in the categories
+  articles.forEach(article => article.cover = `./assets/articleImages/${article.id}/cover.jpeg`);
+  categories.forEach(category => category.articles.forEach(article => article.cover = `./assets/articleImages/${article.id}/cover.jpeg`));
+
+  return { articles, categories } as indexData;
+};
+
+type indexData = {
+  articles: Article[];
+  categories: Category[];
+}
+
 export default function Index() {
+  let { articles, categories } = useLoaderData<indexData>() as indexData;
+
   return (
     <>
     <Hero cover={ headerImage } title={ "Walk This Way" } content={ "Heavy metal i Rock Magazin" } />
-    <ChosenArticles/>
+    <ChosenArticles articles={ articles } />
     <GigsNearYou/>
     <Categories categories={ categories }/>
     <Registration/>
@@ -34,42 +89,21 @@ export default function Index() {
 */
 
 
-const articles = [
-  {
-    image: "https://picsum.photos/500",
-    title: "Metallica rocks the stage in New York",
-    text: "Metallica played an epic concert in New York last night, performing all their greatest hits to a sold-out crowd of over 50,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Enter Sandman' and a surprise guest appearance by Dave Mustaine during 'The Four Horsemen'. Fans are already calling it one of the best concerts of the year."
-  },
-  {
-    image: "https://picsum.photos/400",
-    title: "AC/DC electrifies the crowd in London",
-    text: "AC/DC brought their signature brand of hard rock to London last night, playing to a packed house at Wembley Stadium. The band's setlist included classics like 'Highway to Hell', 'Back in Black', and 'Thunderstruck', as well as a few deep cuts for the die-hard fans. The highlight of the show was a 20-minute guitar solo by Angus Young during 'Let There Be Rock', which had the entire stadium on their feet. Fans are already clamoring for the band to announce their next tour dates."
-  },
-  {
-    image: "https://picsum.photos/600",
-    title: "Guns N' Roses reunites for epic concert in Los Angeles",
-    text: "Guns N' Roses played a historic concert in Los Angeles last night, marking the first time the band's original lineup has performed together in over 20 years. The show was a celebration of the band's classic album 'Appetite for Destruction', with the band playing the entire album from start to finish. The crowd went wild for hits like 'Sweet Child O' Mine' and 'Welcome to the Jungle', and the band even threw in a few surprises, like a cover of 'Knockin' on Heaven's Door'. Fans are already calling it one of the best concerts of all time."
-  }
-]
 
-export type Article = {
-  image: string;
-  title: string;
-  text: string;
-};
-
-function ArticleCard({image, title, text}: Article) {
+function ArticleCard({id, title, content}: Article) {
   return (
     <div className="flex flex-col p-5 border w-3/4 lg:w-1/3 xl:w-1/4 m-10 aspect-square">
-      <img src={image} alt="" className="aspect-square pb-5" />
-      <h2 className="text-xl font-bold mb-3 line-clamp-2">{title}</h2>
-      <p className="line-clamp-3">{text}</p>
+      <Link to={`http://localhost:3000/articles/${id}`}>
+        <img src={`./assets/articleImages/${id}/cover.jpeg`} alt="" className="aspect-square pb-5 object-cover" />
+        <h2 className="text-xl font-bold mb-3 line-clamp-2">{title}</h2>
+        <p className="line-clamp-3">{content}</p>
+      </Link>
     </div>
   )
 }
   
 
-function ChosenArticles() {
+function ChosenArticles( { articles }: {articles:Article[]} ) {
   return (
     <div className="flex flex-wrap flex-center min-h-screen p-20">
       {articles.map((article) => <ArticleCard {...article} />)}
@@ -92,128 +126,7 @@ function GigsNearYou() {
 }
 
 
-type Category = {
-  title: string; 
-  articles: Article[];
-}
 
-const categories: Category[] = [
-  {
-    title: "Metal",
-    articles: [
-      {
-        image: "https://picsum.photos/500",
-        title: "Metallica rocks the stage in New York",
-        text: "Metallica played an epic concert in New York last night, performing all their greatest hits to a sold-out crowd of over 50,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Enter Sandman' and a surprise guest appearance by Dave Mustaine during 'The Four Horsemen'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Iron Maiden rocks the stage in London",
-        text: "Iron Maiden played an epic concert in London last night, performing all their greatest hits to a sold-out crowd of over 50,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'The Trooper' and a surprise guest appearance by Bruce Dickinson during 'Fear of the Dark'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/600",
-        title: "Black Sabbath reunites for epic concert in Los Angeles",
-        text: "Black Sabbath played a historic concert in Los Angeles last night, marking the first time the band's original lineup has performed together in over 20 years. The show was a celebration of the band's classic album 'Paranoid', with the band playing the entire album from start to finish. The crowd went wild for hits like 'Iron Man' and 'War Pigs', and the band even threw in a few surprises, like a cover of 'N.I.B.'. Fans are already calling it one of the best concerts of all time."
-      },
-      {
-        image: "https://picsum.photos/500",
-        title: "Slayer rocks the stage in Chicago",
-        text: "Slayer played an epic concert in Chicago last night, performing all their greatest hits to a sold-out crowd of over 20,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Raining Blood' and a surprise guest appearance by Kerry King during 'Angel of Death'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Judas Priest rocks the stage in Tokyo",
-        text: "Judas Priest played an epic concert in Tokyo last night, performing all their greatest hits to a sold-out crowd of over 30,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Breaking the Law' and a surprise guest appearance by Glenn Tipton during 'Painkiller'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/500",
-        title: "Foo Fighters rock the stage in Seattle",
-        text: "Foo Fighters played an epic concert in Seattle last night, performing all their greatest hits to a sold-out crowd of over 50,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Everlong' and a surprise guest appearance by Krist Novoselic during 'Big Me'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Pearl Jam rocks the stage in Chicago",
-        text: "Pearl Jam played an epic concert in Chicago last night, performing all their greatest hits to a sold-out crowd of over 50,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Alive' and a surprise guest appearance by Chris Cornell during 'Hunger Strike'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/600",
-        title: "Red Hot Chili Peppers reunites for epic concert in Los Angeles",
-        text: "Red Hot Chili Peppers played a historic concert in Los Angeles last night, marking the first time the band's original lineup has performed together in over 20 years. The show was a celebration of the band's classic album 'Blood Sugar Sex Magik', with the band playing the entire album from start to finish. The crowd went wild for hits like 'Give It Away' and 'Under the Bridge', and the band even threw in a few surprises, like a cover of 'Higher Ground'. Fans are already calling it one of the best concerts of all time."
-      },
-      {
-        image: "https://picsum.photos/500",
-        title: "Green Day rocks the stage in New York",
-        text: "Green Day played an epic concert in New York last night, performing all their greatest hits to a sold-out crowd of over 20,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'American Idiot' and a surprise guest appearance by Tim Armstrong during 'Basket Case'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "The Strokes rocks the stage in London",
-        text: "The Strokes played an epic concert in London last night, performing all their greatest hits to a sold-out crowd of over 30,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a pyrotechnic display during 'Last Nite' and a surprise guest appearance by Jarvis Cocker during 'Someday'. Fans are already calling it one of the best concerts of the year."
-      }
-    ]
-  },
-  {
-    title: "Rock",
-    articles: [
-      {
-        image: "https://picsum.photos/500",
-        title: "AC/DC electrifies the crowd in London",
-        text: "AC/DC brought their signature brand of hard rock to London last night, playing to a packed house at Wembley Stadium. The band's setlist included classics like 'Highway to Hell', 'Back in Black', and 'Thunderstruck', as well as a few deep cuts for the die-hard fans. The highlight of the show was a 20-minute guitar solo by Angus Young during 'Let There Be Rock', which had the entire stadium on their feet. Fans are already clamoring for the band to announce their next tour dates."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Guns N' Roses reunites for epic concert in Los Angeles",
-        text: "Guns N' Roses played a historic concert in Los Angeles last night, marking the first time the band's original lineup has performed together in over 20 years. The show was a celebration of the band's classic album 'Appetite for Destruction', with the band playing the entire album from start to finish. The crowd went wild for hits like 'Sweet Child O' Mine' and 'Welcome to the Jungle', and the band even threw in a few surprises, like a cover of 'Knockin' on Heaven's Door'. Fans are already calling it one of the best concerts of all time."
-      },
-      {
-        image: "https://picsum.photos/600",
-        title: "Queen rocks the stage in Rio de Janeiro",
-        text: "Queen played an epic concert in Rio de Janeiro last night, performing all their greatest hits to a sold-out crowd of over 100,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a duet between Freddie Mercury and Adam Lambert during 'Somebody to Love' and a guitar solo by Brian May during 'Bohemian Rhapsody'. Fans are already calling it one of the best concerts of all time."
-      },
-      {
-        image: "https://picsum.photos/500",
-        title: "The Rolling Stones rock the stage in Paris",
-        text: "The Rolling Stones played an epic concert in Paris last night, performing all their greatest hits to a sold-out crowd of over 80,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a duet between Mick Jagger and Keith Richards during 'Sympathy for the Devil' and a guitar solo by Ronnie Wood during 'Jumpin' Jack Flash'. Fans are already calling it one of the best concerts of the year."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Foo Fighters rock the stage in Sydney",
-        text: "Foo Fighters played an epic concert in Sydney last night, performing all their greatest hits to a sold-out crowd of over 50,000 fans. The band's energy was electric, and the audience was on their feet the entire time. Highlights of the show included a duet between Dave Grohl and Taylor Hawkins during 'Everlong' and a guitar solo by Chris Shiflett during 'The Pretender'. Fans are already calling it one of the best concerts of the year."
-      }
-    ]
-  },
-  {
-    title: "Interviews",
-    articles: [
-      {
-        image: "https://picsum.photos/500",
-        title: "Interview with James Hetfield",
-        text: "In this exclusive interview, Metallica frontman James Hetfield talks about the band's latest album, 'Hardwired... to Self-Destruct', and what it's like to be a rock star in the 21st century. Hetfield also discusses his struggles with addiction and how he's managed to stay sober for over a decade."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Interview with Dave Grohl",
-        text: "In this exclusive interview, Foo Fighters frontman Dave Grohl talks about the band's latest album, 'Concrete and Gold', and what it's like to be a rock star in the age of social media. Grohl also discusses his experiences playing with Nirvana and how that shaped his approach to music."
-      },
-      {
-        image: "https://picsum.photos/600",
-        title: "Interview with Robert Plant",
-        text: "In this exclusive interview, Led Zeppelin frontman Robert Plant talks about his latest solo album, 'Carry Fire', and what it's like to be a rock legend in the 21st century. Plant also discusses his experiences with Led Zeppelin and how the band's music continues to inspire new generations of fans."
-      },
-      {
-        image: "https://picsum.photos/500",
-        title: "Interview with Ozzy Osbourne",
-        text: "In this exclusive interview, Ozzy Osbourne talks about his latest solo album, 'Ordinary Man', and what it's like to be a rock icon in the 21st century. Osbourne also discusses his experiences with Black Sabbath and how the band's music continues to influence new generations of musicians."
-      },
-      {
-        image: "https://picsum.photos/400",
-        title: "Interview with Axl Rose",
-        text: "In this exclusive interview, Guns N' Roses frontman Axl Rose talks about the band's reunion tour and what it's like to be back on stage with his former bandmates. Rose also discusses his experiences with the band's classic lineup and how they've managed to put their differences aside for the sake of the music."
-      }
-    ]
-  }
-]
 
 function Categories({categories}: {categories:Category[]}) {
   return (

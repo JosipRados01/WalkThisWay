@@ -19,7 +19,6 @@ export async function loader({ params }:LoaderFunctionArgs) {
     },
     select: {
       title: true,
-      cover: true,
       content: true,
       categoryId: true,
       likes: true,
@@ -42,11 +41,10 @@ export async function loader({ params }:LoaderFunctionArgs) {
       category: {
         select: {
           name: true,
-          Article: {
+          articles: {
             take: 15, // Limit to 15 articles
             select: {
               id: true,
-              cover: true,
               title: true,
               content: true,
             },
@@ -77,7 +75,7 @@ export async function loader({ params }:LoaderFunctionArgs) {
     const  content = article.content.split("||");
 
     // format the articles in the category
-    const moreArticles = article.category?.Article?.map(article => {
+    const moreArticles = article.category?.articles?.map(article => {
       let content = article.content.split("||")
       let firstParagraph = content.find((str) => str.startsWith("pa:"));
       //remove the "pa:" from the string
@@ -89,7 +87,7 @@ export async function loader({ params }:LoaderFunctionArgs) {
         firstParagraph = content[0];
       return {
         id: article.id,
-        cover: article.cover,
+        cover: `/assets/articleImages/${article.id}/cover.jpeg`,
         title: article.title,
         content: firstParagraph,
       }
@@ -98,7 +96,7 @@ export async function loader({ params }:LoaderFunctionArgs) {
     return {
       articleId: params.articleId,
       title: article.title,
-      cover: `/assets/articleImages/${params.articleId}/cover.${article.cover.split('.').pop()}`,
+      cover: `/assets/articleImages/${params.articleId}/cover.jpeg`,
       content: content,
       comments: commentsWithChildren,
       category: article.category ? {
@@ -286,7 +284,7 @@ function Article() {
         }
       })
       }
-      { data.category && <Carousel title={data.category.title} articles={data.category.articles} />}
+      { data.category && <Carousel name={data.category.title} articles={data.category.articles} />}
       {/* <h2 className="">Leave a comment</h2>
       <form className="">
         <textarea className=""></textarea>
