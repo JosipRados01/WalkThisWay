@@ -1,4 +1,4 @@
-import { Outlet, LiveReload, Link, Scripts, Meta } from "@remix-run/react";
+import { Outlet, LiveReload, Link, Scripts, Meta, ScrollRestoration } from "@remix-run/react";
 import React from "react";
 import globalCSS from "~/styles/global.css";
 
@@ -46,6 +46,7 @@ function Document ({ children, title }: DocumentProps) {
       </head>
       <body className="bg-black text-white">
         {children}
+        <ScrollRestoration />
         <Scripts />
         { process.env.NODE_ENV === "development" && <LiveReload /> }
       </body>

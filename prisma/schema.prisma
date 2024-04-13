@@ -47,13 +47,27 @@ model Performer {
   updatedAt DateTime  @updatedAt
   profile   Profile?
   articles  Article[]
-  gigId     Int
-  gig       Gig       @relation(fields: [gigId], references: [id])
+  Gig       Gig?      @relation(fields: [gigId], references: [id])
+  gigId     Int?
+}
+
+model Gig {
+  id          Int         @id @default(autoincrement())
+  name        String
+  picture     String
+  description String
+  dateTime    DateTime
+  locationId  Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  location    Location    @relation(fields: [locationId], references: [id])
+  performers  Performer[]
 }
 
 model Article {
   id          Int        @id @default(autoincrement())
   title       String
+  cover       String     @default("")
   content     String
   eventTime   DateTime?
   createdAt   DateTime   @default(now())
@@ -96,17 +110,4 @@ model Category {
   id      Int       @id @default(autoincrement())
   name    String
   Article Article[]
-}
-
-model Gig {
-  id          Int         @id @default(autoincrement())
-  name        String
-  picture     String
-  description String
-  dateTime    DateTime
-  locationId  Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  location    Location    @relation(fields: [locationId], references: [id])
-  performers  Performer[]
 }

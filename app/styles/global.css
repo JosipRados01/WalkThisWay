@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* npx tailwindcss -i ./app/styles/global.css -o ./dist/output.css --watch */
+
 .flex-space-between {
     align-items: center;
     justify-content: space-between;

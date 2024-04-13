@@ -3,6 +3,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {db} from '~/utils/db.server'
 import type { Prisma } from '@prisma/client';
+import { Carousel } from "~/components/Carousel";
 
 type Article = Prisma.ArticleGetPayload<{
   include: {
@@ -33,22 +34,33 @@ export async function loader() {
 }
 
 function Articles() {
-  const categories = useLoaderData<Categories>();
+  let categories = useLoaderData<Categories>();
 
+  //for content use the first paragraph of each article and remove the "pa:" from the string
+  Object.entries(categories).forEach(([category, articles]) => {
+    return articles.forEach(article => {
+      let content = article.content.split("||")
+      let firstParagraph = content.find((str) => str.startsWith("pa:"));
+      //remove the "pa:" from the string
+      if(firstParagraph) {
+        firstParagraph = firstParagraph.replace("pa:", "");
+      }
+      //if there is no paragraph, use the first text
+      else 
+        firstParagraph = content[0];
+
+      article.content = firstParagraph;
+    })
+  })
+  
   return (
     <div>
-      <h1>All articles</h1>
+      <h1>Categories</h1>
+      <p> Walk this way sadrzi mnogo sadržaja. Najlakše pronadji što te zanima kroz naše kategorije:</p>
+      
       {Object.entries(categories).map(([category, articles]) => (
         <div key={category} className="pb-20">
-          <h2>{category}</h2>
-          <div className="flex">
-          {articles.map((article) => (
-            <div key={article.id} className="max-w-lg">
-              <h3>{article.title}</h3>
-              <p>{article.content}</p>
-            </div>
-          ))}
-          </div>
+          <Carousel title={category} articles={articles} />
         </div>
       ))}
     </div>

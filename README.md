@@ -36,3 +36,6 @@ Make sure to deploy the output of `remix build`
 
 - `build/`
 - `public/build/`
+
+# Tailwind build command
+npx tailwindcss -i ./app/styles/global.css -o ./src/styles/global.css --watch

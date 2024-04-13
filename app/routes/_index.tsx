@@ -1,6 +1,8 @@
 import type { MetaFunction } from "@remix-run/node";
 import { ParallaxBanner } from "react-scroll-parallax";
 import headerImage from "~/images/naslovna.jpg";
+import { Hero } from "~/components/Hero";
+import { Carousel } from "~/components/Carousel";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,7 +14,7 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   return (
     <>
-    <Hero/>
+    <Hero cover={ headerImage } title={ "Walk This Way" } content={ "Heavy metal i Rock Magazin" } />
     <ChosenArticles/>
     <GigsNearYou/>
     <Categories categories={ categories }/>
@@ -30,19 +32,6 @@ export default function Index() {
  * 5. become a member block with small about us text and registration form
  * 6. footer with links to social media and contact form
 */
-
-function Hero() {
-  return (
-    <div className="relative flex-column flex-center h-screen text-white text-center rocker overflow-hidden">
-      <img src={headerImage} alt="" className="parallaxImage h-screen w-full object-cover dark-filter" />
-      <div className="absolute-center inset-0 text-shadow">
-        <h1 className="mt-20 text-7xl pb-5">Walk This Way</h1>
-        <p>Heavy metal i Rock Magazin</p>
-      </div>
-      <p className="absolute inset-x-0 bottom-20 pb-20 text-shadow text-2xl animate-bounce-slow">Čitaj dalje</p>
-     </div>
-  )
-}
 
 
 const articles = [
@@ -102,41 +91,6 @@ function GigsNearYou() {
   )
 }
 
-
-function ArticlePreview({image, title, text}: Article) {
-  return (
-    <div className="flex flex-col p-5 border w-96 m-10 aspect-square">
-      <img src={image} alt="" className="aspect-square pb-5" />
-      <h2 className="text-xl font-bold mb-3 line-clamp-2">{title}</h2>
-      <p className="line-clamp-3">{text}</p>
-    </div>
-  )
-}
-
-const handleScrollForwards = (event: React.MouseEvent<HTMLDivElement>): void => {
-  const screenWidth = window.innerWidth;
-  event.currentTarget.parentNode ? (event.currentTarget.parentNode as HTMLElement).scrollBy({left: screenWidth, behavior: "smooth"}) : null;
-}
-
-const handleScrollBackwards = (event: React.MouseEvent<HTMLDivElement>): void => {
-  const screenWidth = window.innerWidth;
-  event.currentTarget.parentNode ? (event.currentTarget.parentNode as HTMLElement).scrollBy({left: -screenWidth, behavior: "smooth"}) : null;
-}
-
-function Carousel({title, articles}: {title:string, articles: Article[]}) {
-  return (
-    <div className="relative">
-      <h2 className="ps-20 pt-20 text-4xl">{title}</h2>
-      <div className="overflow-x-scroll">
-        <div className="scrollBack flex flex-center" onClick={ handleScrollBackwards}><i className="fa fa-chevron-left"></i></div>
-          <div className="carousel">
-            {articles.map((article) => <ArticlePreview {...article} />)}
-          </div>
-        <div className="scrollForward flex flex-center " onClick={handleScrollForwards}> <i className="fa fa-chevron-right" aria-hidden="true"></i> </div>
-      </div>
-    </div>
-  )
-}
 
 type Category = {
   title: string; 
