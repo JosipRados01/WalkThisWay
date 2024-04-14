@@ -30,7 +30,6 @@ export const loader: LoaderFunction = async () => {
   const articles = await db.article.findMany({
     select: {
       id: true,
-      cover: true,
       title: true,
       content: true,
     },
@@ -63,13 +62,43 @@ type indexData = {
   articles: Article[];
   categories: Category[];
 }
-
 export default function Index() {
   let { articles, categories } = useLoaderData<indexData>() as indexData;
+  // loop through the articles every 5 seconds
+  let [articleIndex, setArticleIndex] = React.useState(0);
+  
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      // remove the chosenArticle class from all 3 cards
+      document.querySelectorAll(".chosenArticle").forEach(card => card.classList.remove("chosenArticle"));
+
+      setArticleIndex((prevIndex) => (prevIndex + 1) % articles.length);
+
+      // get the card with the new index
+      console.log("chosenArticleIndex-" + articleIndex);
+      const newCard = document.getElementById("chosenArticleIndex-" + articleIndex);
+      // add the chosenArticle class to the new card
+      newCard?.classList.add("chosenArticle");
+      
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [articles]);
+
+
+  React.useEffect(() => {
+    // remove the chosenArticle class from all 3 cards
+    document.querySelectorAll(".chosenArticle").forEach(card => card.classList.remove("chosenArticle"));
+    // get the card with the new index
+    console.log("chosenArticleIndex-" + articleIndex);
+    const newCard = document.getElementById("chosenArticleIndex-" + articleIndex);
+    // add the chosenArticle class to the new card
+    newCard?.classList.add("chosenArticle");
+  }, [articleIndex]);
+
 
   return (
     <>
-    <Hero cover={ headerImage } title={ "Walk This Way" } content={ "Heavy metal i Rock Magazin" } />
+    <Hero cover={ articles[articleIndex].cover } title={ "Walk This Way" } content={ "Heavy metal i Rock Magazin" } />
     <ChosenArticles articles={ articles } />
     <GigsNearYou/>
     <Categories categories={ categories }/>
@@ -90,9 +119,9 @@ export default function Index() {
 
 
 
-function ArticleCard({id, title, content}: Article) {
+function ArticleCard({id, title, content, index} : Article & {index: number}) {
   return (
-    <div className="flex flex-col p-5 border w-3/4 lg:w-1/3 xl:w-1/4 m-10 aspect-square">
+    <div className="flex flex-col p-5 border w-3/4 lg:w-1/3 xl:w-1/4 m-10 aspect-square duration-300" id={"chosenArticleIndex-" + index}>
       <Link to={`http://localhost:3000/articles/${id}`}>
         <img src={`./assets/articleImages/${id}/cover.jpeg`} alt="" className="aspect-square pb-5 object-cover" />
         <h2 className="text-xl font-bold mb-3 line-clamp-2">{title}</h2>
@@ -106,12 +135,13 @@ function ArticleCard({id, title, content}: Article) {
 function ChosenArticles( { articles }: {articles:Article[]} ) {
   return (
     <div className="flex flex-wrap flex-center min-h-screen p-20">
-      {articles.map((article) => <ArticleCard {...article} />)}
+      {articles.map((article, index) => <ArticleCard key={index} {...article} index={index} />)}
     </div>
   )
 }
 
 import mapImage from "~/images/map.jpeg";
+import React from "react";
 
 function GigsNearYou() {
   return (

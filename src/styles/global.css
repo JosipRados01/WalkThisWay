@@ -1058,6 +1058,10 @@ body, html {
   background: linear-gradient(270deg, rgba(0,0,0,6) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
 }
 
+.chosenArticle {
+  scale: 1.1;
+}
+
 .hover\:bg-blue-700:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(29 78 216 / var(--tw-bg-opacity));
