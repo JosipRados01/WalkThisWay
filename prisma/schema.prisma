@@ -11,6 +11,7 @@ model Profile {
   id             Int        @id @default(autoincrement())
   name           String
   email          String     @unique
+  password       String
   role           String
   profilePicture String
   performerId    Int?       @unique
@@ -21,44 +22,6 @@ model Profile {
   comments       Comment[]
   performer      Performer? @relation(fields: [performerId], references: [id])
   location       Location?  @relation(fields: [locationId], references: [id])
-}
-
-model Location {
-  id        Int       @id @default(autoincrement())
-  name      String
-  latitude  Float
-  longitude Float
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  articles  Article[]
-  gigs      Gig[]
-  profiles  Profile[]
-}
-
-model Performer {
-  id        Int       @id @default(autoincrement())
-  name      String
-  bio       String
-  profileId Int?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  gigId     Int?
-  articles  Article[]
-  Gig       Gig?      @relation(fields: [gigId], references: [id])
-  profile   Profile?
-}
-
-model Gig {
-  id          Int         @id @default(autoincrement())
-  name        String
-  picture     String
-  description String
-  dateTime    DateTime
-  locationId  Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  location    Location    @relation(fields: [locationId], references: [id])
-  performers  Performer[]
 }
 
 model Article {
@@ -106,4 +69,42 @@ model Category {
   id       Int       @id @default(autoincrement())
   name     String
   articles Article[]
+}
+
+model Location {
+  id        Int       @id @default(autoincrement())
+  name      String
+  latitude  Float
+  longitude Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  articles  Article[]
+  gigs      Gig[]
+  profiles  Profile[]
+}
+
+model Performer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  bio       String
+  profileId Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  gigId     Int?
+  articles  Article[]
+  Gig       Gig?      @relation(fields: [gigId], references: [id])
+  profile   Profile?
+}
+
+model Gig {
+  id          Int         @id @default(autoincrement())
+  name        String
+  picture     String
+  description String
+  dateTime    DateTime
+  locationId  Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  location    Location    @relation(fields: [locationId], references: [id])
+  performers  Performer[]
 }
