@@ -146,52 +146,8 @@ export async function action({ request }: LoaderFunctionArgs) {
 
 }
 
-type Profile = {
-  id?: number;
-  name: string;
-  email?: string;
-  role?: string;
-  profilePicture?: string;
-  performerId?: number | null;
-  locationId?: number | null;
-  createdAt?: Date;
-  updatedAt?: Date;
-  performer?: Performer | null;
-  location?: Location | null;
-  articles?: Article[];
-  comments?: Comment[];
-};
-
-type Performer = {
-  id: number;
-  // Add other properties for Performer type
-};
-
-type Location = {
-  id: number;
-  // Add other properties for Location type
-};
-
-type Comment = {
-  id?: number;
-  content: string;
-  parentCommentId?: number | null;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  writerId?: number;
-  articleId?: number;
-  writer: Profile;
-  article?: Article;
-  parentComment?: Comment | null;
-  childComments?: Comment[];
-};
-
-type ArticlePreview = {
-  id: number;
-  cover: string;
-  title: string;
-  content: string;
-};
+import Comment from "../types/comment";
+import ArticlePreview from "../types/articlePreview";
 
 export type Article = {
   articleId: string;

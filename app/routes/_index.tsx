@@ -4,6 +4,9 @@ import { Hero } from "~/components/Hero";
 import { Carousel } from "~/components/Carousel";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { db } from "~/utils/db.server";
+import type ArticlePreview from "~/types/articlePreview";
+import Category from "~/types/category";
+
 
 export const meta: MetaFunction = () => {
   return [
@@ -11,19 +14,6 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
-
-export type Article = {
-  id: number;
-  cover: string;
-  title: string;
-  content: string;
-};
-
-type Category = {
-  id: number;
-  name: string; 
-  articles: Article[];
-}
 
 
 export const loader: LoaderFunction = async () => {
@@ -34,7 +24,7 @@ export const loader: LoaderFunction = async () => {
       content: true,
     },
     take: 3, // Select only 3 articles
-  }) as Article[];
+  }) as ArticlePreview[];
 
   const categories = await db.category.findMany({
     select: {
@@ -59,9 +49,10 @@ export const loader: LoaderFunction = async () => {
 };
 
 type indexData = {
-  articles: Article[];
+  articles: ArticlePreview[];
   categories: Category[];
 }
+
 export default function Index() {
   let { articles, categories } = useLoaderData<indexData>() as indexData;
   // loop through the articles every 5 seconds
@@ -119,7 +110,7 @@ export default function Index() {
 
 
 
-function ArticleCard({id, title, content, index} : Article & {index: number}) {
+function ArticleCard({id, title, content, index} : ArticlePreview & {index: number}) {
   return (
     <div className="flex flex-col p-5 border w-3/4 lg:w-1/3 xl:w-1/4 m-10 aspect-square duration-300" id={"chosenArticleIndex-" + index}>
       <Link to={`http://localhost:3000/articles/${id}`}>
@@ -132,7 +123,7 @@ function ArticleCard({id, title, content, index} : Article & {index: number}) {
 }
   
 
-function ChosenArticles( { articles }: {articles:Article[]} ) {
+function ChosenArticles( { articles }: {articles:ArticlePreview[]} ) {
   return (
     <div className="flex flex-wrap flex-center min-h-screen p-20">
       {articles.map((article, index) => <ArticleCard key={index} {...article} index={index} />)}

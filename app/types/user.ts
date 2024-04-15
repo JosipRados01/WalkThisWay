@@ -1,5 +1,3 @@
-
-// Define the user type
 type User = {
     id: number;
     email: string;

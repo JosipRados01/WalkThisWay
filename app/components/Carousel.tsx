@@ -1,13 +1,7 @@
 import { Link } from "@remix-run/react";
+import type ArticlePreview from "../types/articlePreview";
 
-export type Article = {
-    id: number;
-    cover: string;
-    title: string;
-    content: string;
-};
-
-function ArticlePreview({cover: image, title, content: text, id}: Article) {
+function ArticlePreview({cover: image, title, content: text, id}: ArticlePreview) {
     return (
       <Link to={`http://localhost:3000/articles/${id}`}>
         <div className="flex flex-col p-5 border w-96 m-10 aspect-square">
@@ -29,7 +23,7 @@ const handleScrollBackwards = (event: React.MouseEvent<HTMLDivElement>): void =>
     event.currentTarget.parentNode ? (event.currentTarget.parentNode as HTMLElement).scrollBy({left: -screenWidth, behavior: "smooth"}) : null;
 }
   
-export function Carousel({name, articles}: {name:string, articles: Article[]}) {
+export function Carousel({name, articles}: {name:string, articles: ArticlePreview[]}) {
     return (
       <div className="relative">
         <h2 className="ps-20 pt-20 text-4xl">{name}</h2>
