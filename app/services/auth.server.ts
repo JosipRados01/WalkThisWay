@@ -4,13 +4,7 @@ import { sessionStorage } from "~/services/sessionService.server";
 import { FormStrategy } from "remix-auth-form";
 import {db} from "~/utils/db.server";
 
-// Define the user type
-export type User = {
-    id: number;
-    email: string;
-    name: string;
-    role: string;
-};
+import User from "~/types/user";
 
 // Define the login function
 const login = async (email: string, password: string): Promise<User> => {

@@ -1,15 +1,8 @@
-import { Outlet, LiveReload, Link, Scripts, Meta, ScrollRestoration } from "@remix-run/react";
+import { Outlet, LiveReload, Link, Scripts, Meta, ScrollRestoration, useLoaderData } from "@remix-run/react";
 import React from "react";
 import globalCSS from "~/styles/global.css";
+import { authenticator } from "~/services/auth.server";
 
-const links = [
-  { name: "Home", url: "/" },
-  { name: "Articles", url: "/articles" },
-  { name: "Events", url: "/events" },
-  { name: "Categories", url: "/categories" },
-  { name: "About us", url: "/about" },
-  { name: "Contact", url: "/contact" },
-];
 
 export default function App () {
   return (
@@ -54,9 +47,39 @@ function Document ({ children, title }: DocumentProps) {
   );
 }
 
-import wtwLogo from "~/images/wtw_logo.jpg";
+import wtwLogo from "~/images/wtw_logo_t.png";
+import { LoaderFunctionArgs } from "@remix-run/node";
+
+//loader function
+export async function loader({ request }: LoaderFunctionArgs) {
+  //check if the user is authenticated
+  let user = await authenticator.isAuthenticated(request);
+  return user;
+}
+
+import User from "~/types/user";
 
 function Layout({ children }: { children: React.ReactNode }) {
+
+  const links = [
+    { name: "Home", url: "/" },
+    { name: "Categories", url: "/articles" },
+    //{ name: "Events", url: "/events" },
+    { name: "About us", url: "/about" },
+  ];
+
+  // display different links based on the user role and if the user is logged in
+  let user = useLoaderData() as User; 
+  if (user) {
+    links.push({ name: "Profile", url: "/profile" });
+    links.push({ name: "Logout", url: "/logout" });
+    if (user.role === "admin") {
+      links.push({ name: "Admin", url: "/admin" });
+    }
+  } else {
+    links.push({ name: "Login", url: "/login" });
+    links.push({ name: "Register", url: "/register" });
+  }
   return (
     <>
       <nav className="flex flex-space-between h-20 fixed top-0 left-0 right-0 header-nav-background text-white z-10 rocker ">

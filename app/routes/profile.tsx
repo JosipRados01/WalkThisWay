@@ -14,13 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return user;
   };
 
-// Define the user type
-export type User = {
-    id: number;
-    email: string;
-    name: string;
-    role: string;
-};
+import User from "~/types/user";
 
 export default function Profile() {
     let user = useLoaderData() as User;
