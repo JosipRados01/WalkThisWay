@@ -57,7 +57,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return user;
 }
 
-import Profile from "~/types/profile";
+import ProfileAuthFragment from "./types/profileAuthFragment";
 
 function Layout({ children }: { children: React.ReactNode }) {
 
@@ -69,7 +69,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   // display different links based on the user role and if the user is logged in
-  let user = useLoaderData() as Profile; 
+  let user = useLoaderData() as ProfileAuthFragment | null; 
   if (user) {
     links.push({ name: "Profile", url: "/profile" });
     links.push({ name: "Logout", url: "/logout" });
@@ -89,7 +89,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           </Link>
         </figure>
         <ul className="flex space-x-5 pe-5">
-         {links.map((link) => (
+          {links.map((link) => (
             <li key={link.url} className="padding-20">
               <Link to={link.url}>{link.name}</Link>
             </li>
