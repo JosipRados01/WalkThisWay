@@ -14,6 +14,7 @@ model Profile {
   password       String
   role           String
   profilePicture String
+  bio            String?
   performerId    Int?       @unique
   locationId     Int?
   createdAt      DateTime   @default(now())

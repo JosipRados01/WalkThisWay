@@ -17,6 +17,7 @@ type Profile = {
     password?: string;
     role?: string;
     profilePicture?: string;
+    bio?: string | undefined;
     performerId?: number | null;
     locationId?: number | null;
     createdAt?: Date;

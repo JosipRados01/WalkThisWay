@@ -4,10 +4,10 @@ import { sessionStorage } from "~/services/sessionService.server";
 import { FormStrategy } from "remix-auth-form";
 import {db} from "~/utils/db.server";
 
-import User from "~/types/user";
+import Profile from "~/types/profile";
 
 // Define the login function
-const login = async (email: string, password: string): Promise<User> => {
+const login = async (email: string, password: string): Promise<Profile> => {
     let user = await db.profile.findUnique({
         where: {
             email: email,
@@ -18,6 +18,8 @@ const login = async (email: string, password: string): Promise<User> => {
             email: true,
             password: true,
             role: true,
+            profilePicture: true,
+            bio: true,
         }
     });
 
@@ -31,12 +33,12 @@ const login = async (email: string, password: string): Promise<User> => {
         throw new Error("Invalid password");
     }
 
-    return user;
+    return user as Profile;
 }
 
 // Create an instance of the authenticator, pass a generic with what
 // strategies will return and will store in the session
-export let authenticator = new Authenticator<User>(sessionStorage);
+export let authenticator = new Authenticator<Profile>(sessionStorage);
 
 // Tell the Authenticator to use the form strategy
 authenticator.use(

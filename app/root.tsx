@@ -57,7 +57,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return user;
 }
 
-import User from "~/types/user";
+import Profile from "~/types/profile";
 
 function Layout({ children }: { children: React.ReactNode }) {
 
@@ -69,7 +69,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   // display different links based on the user role and if the user is logged in
-  let user = useLoaderData() as User; 
+  let user = useLoaderData() as Profile; 
   if (user) {
     links.push({ name: "Profile", url: "/profile" });
     links.push({ name: "Logout", url: "/logout" });
