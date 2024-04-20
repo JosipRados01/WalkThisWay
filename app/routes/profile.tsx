@@ -87,7 +87,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Profile() {
     let user = useLoaderData() as ProfileType;
-    console.log(user);
 
     let [areSettingsVisible, setAreSettingsVisible] = React.useState(false);
     let [IsUpdateProfilePictureVisible, setIsUpdateProfilePictureVisible] = React.useState(false);

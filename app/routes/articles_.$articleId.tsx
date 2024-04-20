@@ -119,7 +119,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   // check if the body contains the action "add_like"
   let body = await request.text()
-  console.log(body);
   let bodyJSON = JSON.parse(body);
 
   // get user
@@ -129,8 +128,6 @@ export async function action({ request }: ActionFunctionArgs) {
     //If the user is logged in, the identificator is the user email, if not, the identificator is the user IP
 
     let identificator = user ? user.email : request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || 'unknown'
-    console.log(identificator);
-    console.log(request)
 
     // add a row to likes table with the article id and the user identificator
     await db.like.create({

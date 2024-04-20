@@ -6,13 +6,10 @@ import { db } from "~/utils/db.server";
 export async function action({ request }: ActionFunctionArgs) {
     //register by getting all the data from the form
     let formData = await request.formData();
-    console.log(formData);
     let email = formData.get("floating_email")?.toString();
     let password = formData.get("floating_password")?.toString();
     let repeatPassword = formData.get("floating_repeat_password")?.toString();
     let name = formData.get("floating_first_name")?.toString();
-
-    console.log(email, password, repeatPassword, name);
 
     //check if the passwords match
     if (password == repeatPassword) {

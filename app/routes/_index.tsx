@@ -66,7 +66,6 @@ export default function Index() {
       setArticleIndex((prevIndex) => (prevIndex + 1) % articles.length);
 
       // get the card with the new index
-      console.log("chosenArticleIndex-" + articleIndex);
       const newCard = document.getElementById("chosenArticleIndex-" + articleIndex);
       // add the chosenArticle class to the new card
       newCard?.classList.add("chosenArticle");
@@ -80,7 +79,6 @@ export default function Index() {
     // remove the chosenArticle class from all 3 cards
     document.querySelectorAll(".chosenArticle").forEach(card => card.classList.remove("chosenArticle"));
     // get the card with the new index
-    console.log("chosenArticleIndex-" + articleIndex);
     const newCard = document.getElementById("chosenArticleIndex-" + articleIndex);
     // add the chosenArticle class to the new card
     newCard?.classList.add("chosenArticle");
