@@ -24,6 +24,7 @@ export async function action({ request }: ActionFunctionArgs) {
           directory: "./public/assets/profilePictures",
         })
       );
+      
       const formData = await unstable_parseMultipartFormData(
         request,
         uploadHandler
