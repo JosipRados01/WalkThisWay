@@ -379,12 +379,29 @@ function Article() {
     } catch (error) { console.error(error) }
   };
 
+  // I want to check for new comments every 10 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(`/articles/${data.articleId}/comments`)
+        .then(response => response.json())
+        .then(data => {
+          if(data.comments){
+            let propperComments = reformatComments(data.comments as CommentType[]);
+            console.log(propperComments);
+            setComments(propperComments);
+          }
+        })
+        .catch(error => console.error(error));
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   //refresh the state of likes when the user navigates to another article or refreshes the page
   React.useEffect(() => {
     setLikes(data.likes || 0);
     setLiked(isLiked);
-    setComments(data.comments as CommentType[] || []);
+    setComments((data.comments) as CommentType[] || []);
   }, [data.likes, data.comments]);
 
 
