@@ -20,8 +20,9 @@ type likeElement = {
 type Article = {
   articleId: string;
   title: string;
+  intro: string;
   cover: string;
-  content: string[];
+  content: ArticleContentType[];
   category?: {
     title: string;
     articles: ArticlePreview[]
@@ -45,7 +46,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
     select: {
       title: true,
+      intro: true,
       content: true,
+      coverImage: true,
       categoryId: true,
       likes: true,
       comments: {
@@ -72,7 +75,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
             select: {
               id: true,
               title: true,
-              content: true,
+              intro: true,
+              coverImage: true,
             },
           },
         },
@@ -84,38 +88,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   //reformat the comments to have children
   const commentsWithChildren = reformatComments(article.comments);
-
-  // split the content into paragraphs, images, videos, etc.
-  const content = article.content.split("||");
+  // parse the content from the database
+  const content = JSON.parse(article.content)
 
   // format the articles in the category
   const moreArticles = article.category?.articles?.map(article => {
-    let content = article.content.split("||")
-    let firstParagraph = content.find((str) => str.startsWith("pa:"));
-    //remove the "pa:" from the string
-    if (firstParagraph) {
-      firstParagraph = firstParagraph.replace("pa:", "");
-    }
-    //if there is no paragraph, use the first text
-    else
-      firstParagraph = content[0];
     return {
       id: article.id,
-      cover: `/assets/articleImages/${article.id}/cover.jpeg`,
+      cover: `../assets/${article.coverImage}`,
       title: article.title,
-      content: firstParagraph,
+      content: article.intro,
     }
   });
 
   const user = await getUser(request)
   
-
   const identificator = user ? user.email : await getIp() || 'unknown';
 
   const articleObject = {
     articleId: params.articleId,
     title: article.title,
-    cover: `/assets/articleImages/${params.articleId}/cover.jpeg`,
+    intro: article.intro,
+    cover: `../assets/${article.coverImage}`,
     content: content,
     comments: commentsWithChildren,
     category: article.category ? {
@@ -133,7 +127,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 const getUser  = async (request : Request) => {
   const userAuthFragment = await authenticator.isAuthenticated(request);
-   return userAuthFragment ? await db.profile.findUnique({
+    return userAuthFragment ? await db.profile.findUnique({
     where: {
       email: userAuthFragment.email,
     },
@@ -222,18 +216,47 @@ export async function action({ request }: ActionFunctionArgs) {
 
 }
 
-function ArticleContent({ content }: { content: string[] }) {
-  return content.map(element => {
-    if (element.startsWith("pa:")) { return <p className="max-w-3xl m-auto mt-5"> {element.replace("pa:", "")} </p> }
+type ArticleContentType = { 
+  elementType: string, 
+  value: string | undefined, 
+  listItems: { id: number, value: string }[] | undefined, 
+  src: string | undefined 
+}
+  
 
-    else if (element.startsWith("im:")) { return <img src={element.replace("im:", "")} alt="" className="max-w-3xl m-auto mt-10" /> }
 
-    else if (element.startsWith("vi:")) { return <video src={element.replace("vi:", "")} controls className="max-w-3xl m-auto mt-10"></video> }
-
-    else if (element.startsWith("he:")) { return <h2 className="max-w-3xl text-2xl m-auto mt-10"> {element.replace("he:", "")} </h2> }
-
-    else { return <p className="max-w-3xl m-auto mt-5"> {element} </p> }
-  })
+function ArticleContent({ content }: { content:ArticleContentType[] }) {
+  return (
+    <div className="max-w-4xl px-8">
+    {
+      content.map(element => {
+        if (element.elementType === "header") {
+          return <h2 className="text-2xl text-center mt-10">{element.value}</h2>;
+        } 
+        else if (element.elementType === "paragraph") {
+          return <p className="mt-5">{element.value}</p>;
+        }
+        else if (element.elementType === "orderedList") {
+          return <ol className="list-decimal list-inside mt-5">
+            {element.listItems?.map(listItem => (
+              <li key={listItem.id}>{listItem.value}</li>
+            ))}
+          </ol>
+        }
+        else if (element.elementType === "unorderedList") {
+          return <ul className="list-disc list-inside mt-5">
+            {element.listItems?.map(listItem => (
+              <li key={listItem.id}>{listItem.value}</li>
+            ))}
+          </ul>
+        }
+        else if (element.elementType === "image") {
+          return <img src={`../assets/${element.src}`} alt="" className=" m-auto mt-10" />
+        }
+      })
+    }
+  </div>
+  )
 }
 
 function ChildComment({ childComment } : {childComment: CommentType}) {
@@ -406,15 +429,15 @@ function Article() {
 
 
   return (
-    <div className="">
-      <Hero cover={data.cover} title={data.title} />
+    <div className="flex flex-col items-center ">
+      <Hero cover={data.cover} title={data.title} content={data.intro} />
       <div className="mt-10">
         <span className="ml-20 text-2xl">{likes}</span>
         {liked ?
           <button className="bg-green-500 text-white font-bold py-2 px-4 rounded ml-5" disabled> Liked </button> :
           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-5" onClick={handleLike}> Like </button>}
       </div>
-      <ArticleContent content={data.content} />
+      <ArticleContent content={data.content as ArticleContentType[]} />
       {data.category && <Carousel name={data.category.title} articles={data.category.articles} />}
 
       <div className="flex flex-col max-w-3xl m-auto mt-10">

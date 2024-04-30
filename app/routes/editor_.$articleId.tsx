@@ -153,7 +153,7 @@ const ElementContainer = ({ children, onDelete, onMoveUp, onMoveDown }: { childr
 
 // inputs for all the different types of elements that we will have in the article
 const HeaderInput = ({placeholder = "", mainHeader = false, value, key, uniqueKey, setValueForInput } : {placeholder: string | undefined, mainHeader: boolean|undefined, value: string, key: number, uniqueKey:number, setValueForInput: saveValueForInputType }) => {
-    return <input type="text" placeholder={placeholder} key={uniqueKey} value={value} onChange={(e) => setValueForInput(e.target.value, uniqueKey)} className={`border border-gray-300 rounded-md px-4 py-2 my-4 bg-transparent text-5xl w-full`}/>
+    return <input type="text" placeholder={placeholder} key={uniqueKey}  value={value} onChange={(e) => setValueForInput(e.target.value, uniqueKey)} className={`border border-gray-300 rounded-md px-4 py-2 my-4 bg-transparent text-${mainHeader? "7" : "5"}xl w-full`}/>
 }
 
 const ParagraphInput = ({placeholder, key, uniqueKey, value, setValueForInput}: {placeholder: string, key: number, uniqueKey:number, value:string, setValueForInput: saveValueForInputType}) => {
@@ -347,6 +347,9 @@ export default function Editor() {
         setIsCover(isCover);
     }
 
+    const [mainTitle, setMainTitle] = React.useState(data.article.title);
+    const [intro, setIntro] = React.useState(data.article.intro);
+
     const [otherElements, setOtherElements] = React.useState<any[]>(content);
 
     function addSelectedElement(selectedElement: string) {
@@ -462,9 +465,6 @@ export default function Editor() {
 
     const save = () => {
         // generate the form data
-        let mainTitle = (document.getElementById("mainTitle") as HTMLInputElement)?.value;
-        let intro = (document.getElementById("introArea") as HTMLInputElement)?.value;
-    
         let dataToSend = {
             title: mainTitle,
             intro: intro,
@@ -483,9 +483,9 @@ export default function Editor() {
     return (
         <div className="flex flex-col items-center justify-center">
             <h1 className="pb-20">WTW Article Editor</h1>
-            <div className="flex flex-col items-center w-1/2">
-                <input type="text" id="mainTitle" placeholder="glavni naslov" value={data.article.title} className={`border border-gray-300 rounded-md px-4 py-2 my-4 bg-transparent text-7xl`}/>
-                <textarea id="introArea" placeholder='Uvod/ kratki opis' value={data.article.intro} className="border border-gray-300 rounded-md px-4 py-2 my-4 bg-transparent w-3/4" rows={3}></textarea>
+            <div className="flex flex-col items-center w-1/2 pb-60">
+                <HeaderInput placeholder="glavni naslov" value={mainTitle} setValueForInput={(val, _)=>{setMainTitle(val)}} mainHeader={true} key={69} uniqueKey={69} />
+                <ParagraphInput placeholder='Uvod/ kratki opis' value={intro} setValueForInput={(val, _)=>{setIntro(val)}} key={96} uniqueKey={96} />
                 <button onClick={() => {openAddImageModal(true)}} className="bg-blue-500 text-white px-4 py-2 my-4 rounded-md" >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
