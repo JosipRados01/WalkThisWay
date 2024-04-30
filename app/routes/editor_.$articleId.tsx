@@ -4,6 +4,16 @@ import React from "react";
 import { ActionFunctionArgs } from "react-router";
 import { authenticator } from "~/services/auth.server";
 import { db } from "~/utils/db.server";
+import { GoListOrdered, GoListUnordered } from "react-icons/go";
+import { BsTextParagraph, BsCardHeading } from "react-icons/bs";
+import { TbHeading } from "react-icons/tb";
+import { RiArrowDropUpLine, RiArrowDropDownLine, RiDeleteBin7Line } from "react-icons/ri";
+import { FaXmark } from "react-icons/fa6";
+import { GoPlus } from "react-icons/go";
+import { TfiSave } from "react-icons/tfi";
+
+
+
 
 
 
@@ -14,6 +24,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
             id: true,
             title: true,
             intro: true,
+            coverImage: true,
             content: true,
             createdAt: true,
             updatedAt: true,
@@ -27,6 +38,24 @@ export async function loader({ params }: LoaderFunctionArgs) {
             writerId: true
         }
     });
+
+    if(!article) {
+        article = {
+            id: -1,
+            title: "",
+            intro: "",
+            coverImage: "",
+            content: JSON.stringify([]),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            writer: {
+                id: 0,
+                name: "New Writer",
+                profilePicture: "default.jpg"
+            },
+            writerId: 0
+        }
+    }
 
     return {article, articleId: params.articleId as string};
 }
@@ -124,36 +153,37 @@ export async function action({ request, params }: ActionFunctionArgs) {
 const ElementContainer = ({ children, onDelete, onMoveUp, onMoveDown }: { children: React.ReactNode, onDelete: () => void, onMoveUp: () => void, onMoveDown: () => void }) => {
     return (
         <div className="w-full flex flex-col items-center">
-            {children}
-            <div className="flex justify-center gap-8 w-3/4">
-                <button className="bg-red-500 text-white px-4 py-2 mb-4 rounded-md" onClick={onDelete}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                    </svg>
+            <div className="flex justify-end gap-8 w-3/4">
+                <button className=" text-white w-8 h-8 mt-4 flex items-center justify-center hover:scale-125" onClick={onDelete}>
+                    <FaXmark className="w-4 h-4" />
                 </button>
-                <button className="bg-blue-500 text-white px-4 py-2 mb-4 rounded-md" onClick={onMoveDown} >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
-                    </svg>
+                <button className=" text-white mt-4 hover:scale-125" onClick={onMoveDown} >
+                    <RiArrowDropDownLine className="w-8 h-8" />
                 </button>
-                <button className="bg-blue-500 text-white px-4 py-2 mb-4 rounded-md" onClick={onMoveUp} >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />    
-                    </svg>
+                <button className=" text-white mt-4 hover:scale-125" onClick={onMoveUp} >
+                    <RiArrowDropUpLine className="w-8 h-8" />
                 </button>
             </div>
+            {children}
         </div>
     );
 }
 
 // inputs for all the different types of elements that we will have in the article
 const HeaderInput = ({placeholder = "", mainHeader = false, value, key, uniqueKey, setValueForInput } : {placeholder: string | undefined, mainHeader: boolean|undefined, value: string, key: number, uniqueKey:number, setValueForInput: saveValueForInputType }) => {
-    return <input type="text" placeholder={placeholder} key={uniqueKey}  value={value} onChange={(e) => setValueForInput(e.target.value, uniqueKey)} className={`border border-gray-300 rounded-md px-4 py-2 my-4 bg-transparent text-${mainHeader? "7" : "5"}xl w-full`}/>
+    function autoExpand(e : React.ChangeEvent<HTMLTextAreaElement>) {
+        e.target.style.height = 'inherit';
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    }
+    return <textarea placeholder={placeholder} key={uniqueKey} value={value} onChange={(e) => setValueForInput(e.target.value, uniqueKey)} className={`border border-gray-300 rounded-md px-4 py-2 my-4 bg-opacity-50 bg-black text-${mainHeader? "7" : "5"}xl w-full`} style={{overflow: 'hidden', resize: 'none'}} onInput={autoExpand} onFocus={autoExpand} />
 }
 
 const ParagraphInput = ({placeholder, key, uniqueKey, value, setValueForInput}: {placeholder: string, key: number, uniqueKey:number, value:string, setValueForInput: saveValueForInputType}) => {
-    return <textarea placeholder={placeholder} key={uniqueKey} value={value} onChange={(e)=> {setValueForInput(e.target.value, uniqueKey)} } className="border border-gray-300 rounded-md px-4 py-2 my-4 bg-transparent w-3/4 " rows={3}></textarea>
+    function autoExpand(e : React.ChangeEvent<HTMLTextAreaElement>) {
+        e.target.style.height = 'inherit';
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    }
+    return <textarea placeholder={placeholder} key={uniqueKey} value={value} onChange={(e)=> setValueForInput(e.target.value, uniqueKey)}   className="border border-gray-300 rounded-md px-4 py-2 my-4 bg-opacity-50 bg-black w-3/4" style={{overflow: 'hidden', resize: 'none'}} onInput={autoExpand} onFocus={autoExpand} ></textarea>
 }
 
 const ListInput = ({listItems, ordered , key, uniqueKey, setValueForInput, addItem, removeItem} : {listItems: { id: number, value: string }[], ordered: boolean, key: number, uniqueKey: number, setValueForInput: saveValueForInputType, addItem: (uniqueKey: number) => void , removeItem:(uniqueKey: number, id: number ) => void }) => {
@@ -190,13 +220,8 @@ const ListInput = ({listItems, ordered , key, uniqueKey, setValueForInput, addIt
                     </button>}
                 </li>
             ))}
-            <button
-                onClick={()=> {addItem(uniqueKey)}}
-                className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-md"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
+            <button onClick={()=> {addItem(uniqueKey)}} className=" text-white px-4 pb-2 mb-4" >
+               <GoPlus className="w-6 h-6" />
             </button>
         </ul>
     );
@@ -216,14 +241,14 @@ const ElementAddingComponent = ({ addSelectedElement, elementAdding, toggleEleme
     return (
         <>
         <div className="flex justify-center mt-8">
-                <button onClick={() => {toggleElementAdding() }} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <button onClick={() => {toggleElementAdding() }} className="text-white font-bold py-2 px-4 rounded animate-bounce-slow">
                     {!elementAdding &&
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     }
                     { elementAdding &&
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     }
@@ -233,31 +258,23 @@ const ElementAddingComponent = ({ addSelectedElement, elementAdding, toggleEleme
             <div className="mt-8 flex flex-row gap-8">
 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("he") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
-                    </svg>
+                    <TbHeading className="h-6 w-6 hover:animate-spin "/>
                 </div>
 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("pa") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
-                    </svg>
+                    <BsTextParagraph className="h-6 w-6 hover:animate-spin"/>
                 </div>
 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("ol") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
-                    </svg>
+                    <GoListOrdered className="h-6 w-6 hover:animate-spin"/>
                 </div>
 
                 <div className={elementAddingClasses}onClick={() => {toggleElementAdding(); addSelectedElement("ul") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                    </svg>
+                   <GoListUnordered className="h-6 w-6 hover:animate-spin"/>
                 </div>
                 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("im") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 hover:animate-spin">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                     </svg>
                 </div>
@@ -286,6 +303,8 @@ const ImageModal = ({setIsImageModalOpen, isCover, articleId, save}: {setIsImage
                 method: "POST",
                 body: formData,
             });
+            // reload page
+            window.location.reload();
         } catch (error) {
             // Handle any network or server errors
             console.error(error);
@@ -471,16 +490,20 @@ export default function Editor() {
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <h1 className="pb-20">WTW Article Editor</h1>
-            <div className="flex flex-col items-center w-1/2 pb-60">
-                <HeaderInput placeholder="glavni naslov" value={mainTitle} setValueForInput={(val, _)=>{setMainTitle(val)}} mainHeader={true} key={69} uniqueKey={69} />
-                <ParagraphInput placeholder='Uvod/ kratki opis' value={intro} setValueForInput={(val, _)=>{setIntro(val)}} key={96} uniqueKey={96} />
-                <button onClick={() => {openAddImageModal(true)}} className="bg-blue-500 text-white px-4 py-2 my-4 rounded-md" >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                    </svg>
-                </button>
-                
+            <h1 className="">WTW Article Editor</h1>
+            <div className="w-full flex flex-col items-center justify-center relative" >
+                <figure className="w-full h-full absolute dark-filter">
+                    <img src={`../assets/${data.article.coverImage}`} alt="cover" className="w-full h-full object-cover" />
+                </figure>
+                <div className="flex flex-col items-center w-1/2 py-60 relative">
+                    <HeaderInput placeholder="glavni naslov" value={mainTitle} setValueForInput={(val, _)=>{setMainTitle(val)}} mainHeader={true} key={69} uniqueKey={69} />
+                    <ParagraphInput placeholder='Uvod/ kratki opis' value={intro} setValueForInput={(val, _)=>{setIntro(val)}} key={96} uniqueKey={96} />
+                    <button onClick={() => {openAddImageModal(true)}} className="border border-gray-300 bg-black bg-opacity-75 text-white px-4 py-2 my-4 rounded-md" >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div className="flex flex-col items-center w-1/2">
                 {otherElements.map((element, index) => {
@@ -498,13 +521,15 @@ export default function Editor() {
 
             <ElementAddingComponent addSelectedElement={addSelectedElement} elementAdding={elementAdding} toggleElementAdding={toggleElementAdding} elementAddingClasses={elementAddingClasses} />
 
-            <div className="p-20" ></div>
+            <div className="p-10" ></div>
 
-            <button onClick={save} className="bg-blue-500 text-white px-4 py-2 mb-4 rounded-md" >
-                Save
+            <button onClick={save} className="bg-green-500 text-white px-4 py-2 mb-4 rounded-md flex flex-row" >
+                <TfiSave className="w-6 h-6" />
+                <span className="mx-2">SAVE</span>  
+                <TfiSave className="w-6 h-6" />
             </button>
 
-            <div className="p-40" ></div>
+            <div className="p-16" ></div>
 
             {isImageModalOpen && <ImageModal setIsImageModalOpen={setIsImageModalOpen} isCover={isCover} articleId={data.articleId} save={save} />}
 

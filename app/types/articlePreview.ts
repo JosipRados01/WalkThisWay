@@ -1,7 +1,7 @@
 type ArticlePreview = {
     id: number;
-    cover: string;
     title: string;
-    content: string;
+    coverImage: string;
+    intro: string;
 };
 export default ArticlePreview

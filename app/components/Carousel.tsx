@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import type ArticlePreviewType from "../types/articlePreview";
 
-function ArticlePreview({cover: image, title, content: text, id}: ArticlePreviewType) {
+function ArticlePreview({coverImage: image, title, intro: text, id}: ArticlePreviewType) {
     return (
       <Link to={`http://localhost:3000/articles/${id}`}>
         <div className="flex flex-col p-5 border w-96 m-10 aspect-square">

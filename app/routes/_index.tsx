@@ -21,7 +21,8 @@ export const loader: LoaderFunction = async () => {
     select: {
       id: true,
       title: true,
-      content: true,
+      intro: true,
+      coverImage: true,
     },
     take: 3, // Select only 3 articles
   }) as ArticlePreview[];
@@ -34,7 +35,8 @@ export const loader: LoaderFunction = async () => {
         select: {
           id: true,
           title: true,
-          content: true,
+          intro: true,
+          coverImage: true,
         },
         take: 10, // Select only 10 articles
       },
@@ -42,8 +44,8 @@ export const loader: LoaderFunction = async () => {
   }) as Category[];
 
   // generate the cover urls for the articles and the articles in the categories
-  articles.forEach(article => article.cover = `./assets/articleImages/${article.id}/cover.jpeg`);
-  categories.forEach(category => category.articles.forEach(article => article.cover = `./assets/articleImages/${article.id}/cover.jpeg`));
+  articles.forEach(article => article.coverImage = `./assets/${article.coverImage}`);
+  categories.forEach(category => category.articles.forEach(article => article.coverImage = `./assets/${article.coverImage}`));
 
   return { articles, categories } as indexData;
 };
@@ -87,7 +89,7 @@ export default function Index() {
 
   return (
     <>
-    <Hero cover={ articles[articleIndex].cover } title={ "Walk This Way" } content={ "Heavy metal i Rock Magazin" } />
+    <Hero cover={ articles[articleIndex].coverImage } title={ "Walk This Way" } content={ "Heavy metal i Rock Magazin" } />
     <ChosenArticles articles={ articles } />
     <GigsNearYou/>
     <Categories categories={ categories }/>
@@ -108,13 +110,13 @@ export default function Index() {
 
 
 
-function ArticleCard({id, title, content, index} : ArticlePreview & {index: number}) {
+function ArticleCard({id, title, intro, coverImage, index} : ArticlePreview & {index: number}) {
   return (
     <div className="flex flex-col p-5 border w-3/4 lg:w-1/3 xl:w-1/4 m-10 aspect-square duration-300" id={"chosenArticleIndex-" + index}>
       <Link to={`http://localhost:3000/articles/${id}`}>
-        <img src={`./assets/articleImages/${id}/cover.jpeg`} alt="" className="aspect-square pb-5 object-cover" />
+        <img src={coverImage} alt="" className="aspect-square pb-5 object-cover" />
         <h2 className="text-xl font-bold mb-3 line-clamp-2">{title}</h2>
-        <p className="line-clamp-3">{content}</p>
+        <p className="line-clamp-3">{intro}</p>
       </Link>
     </div>
   )
