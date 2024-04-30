@@ -56,9 +56,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         );
 
         let img = formData.get("image") as unknown as { filename: string, filepath: string };
-        console.log(img)
         let pathToImage = img.filepath.toString().split('/').slice(-3).join('/');
-        console.log(pathToImage)
 
         //check the isCover query parameter
         if (request.url.includes("true")) {
@@ -106,8 +104,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
         let title = data.title;
         let intro = data.intro;
         let content = JSON.stringify(data.content);
-
-        console.log(data)
 
         // update the article data in the db
         await db.article.update({
@@ -273,13 +269,11 @@ const ElementAddingComponent = ({ addSelectedElement, elementAdding, toggleEleme
 const ImageModal = ({setIsImageModalOpen, isCover, articleId, save}: {setIsImageModalOpen: (state: boolean) => void, isCover: boolean, articleId: string, save: () => void} ) => {
 
     const ImageSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        console.log("Image submit")
         event.preventDefault();
         const target = event.currentTarget as HTMLFormElement;
         
         const formData = new FormData(target);
         const isCover = formData.get("isCover") as string;
-        console.log(isCover);
 
         // We save to not lose any data
         await save();
@@ -379,7 +373,6 @@ export default function Editor() {
 
     function moveElementUp(id: number) {
         const index = otherElements.findIndex(element => element.uniqueKey === id);
-        console.log("Index: ", index)
         if (index > 0) {
             const updatedElements = [...otherElements];
             const temp = updatedElements[index];
@@ -402,8 +395,6 @@ export default function Editor() {
 
     const setValueForInput: saveValueForInputType = (value, key, listId) => {
         setOtherElements(prevElements => {
-            console.log("previosElements")
-            console.log(prevElements)
             const index = prevElements.findIndex(element => element.uniqueKey === key);
             let updatedElement;
             if(listId !== undefined) {
@@ -416,10 +407,8 @@ export default function Editor() {
             else {
                 updatedElement = { ...prevElements[index], value: value };
             }
-            console.log("Updated element: ", updatedElement)
             const updatedElements = [...prevElements];
             updatedElements[index] = updatedElement;
-            console.log("Updated elements: ", updatedElements)
             return updatedElements;
         });
     }

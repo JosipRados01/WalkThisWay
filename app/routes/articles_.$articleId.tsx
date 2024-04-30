@@ -180,7 +180,6 @@ export async function action({ request }: ActionFunctionArgs) {
   } else if (bodyJSON.action === "add_comment") {
     // get the content and parentCommentId from the body
     let content = bodyJSON.content;
-    console.log(content);
     let parentCommentId = bodyJSON.parentCommentId || null;
     let user = bodyJSON.user;
     // get the artice id from the request url
@@ -312,7 +311,6 @@ function CommentForm({ parentCommentId, user, articleId, addCommentToState } : {
     
     const formData = new FormData(event.currentTarget);
     const content = formData.get("content") as string;
-    console.log(content);
     if(!content.trim()) return;
 
     // empty the textarea
@@ -410,7 +408,6 @@ function Article() {
         .then(data => {
           if(data.comments){
             let propperComments = reformatComments(data.comments as CommentType[]);
-            console.log(propperComments);
             setComments(propperComments);
           }
         })
