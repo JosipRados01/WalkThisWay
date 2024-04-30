@@ -27,7 +27,9 @@ model Profile {
 
 model Article {
   id          Int        @id @default(autoincrement())
-  title       String
+  title       String?
+  intro       String?
+  coverImage  String?
   content     String
   eventTime   DateTime?
   createdAt   DateTime   @default(now())

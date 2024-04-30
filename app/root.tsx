@@ -75,6 +75,10 @@ function Layout({ children }: { children: React.ReactNode }) {
     links.push({ name: "Logout", url: "/logout" });
     if (user.role === "admin") {
       links.push({ name: "Admin", url: "/admin" });
+      links.push({ name: "Publish", url: "/publish" });
+    }
+    if(user.role === "publisher") {
+      links.push({ name: "Publish", url: "/publish" });
     }
   } else {
     links.push({ name: "Login", url: "/login" });
