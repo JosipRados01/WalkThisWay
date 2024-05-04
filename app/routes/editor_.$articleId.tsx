@@ -17,45 +17,55 @@ import { TfiSave } from "react-icons/tfi";
 
 
 
-export async function loader({ params }: LoaderFunctionArgs) {
-    let article = await db.article.findUnique({
-        where: { id: parseInt(params.articleId as string) },
-        select: {
-            id: true,
-            title: true,
-            intro: true,
-            coverImage: true,
-            content: true,
-            createdAt: true,
-            updatedAt: true,
-            writer: {
-                select: {
-                    id: true,
-                    name: true,
-                    profilePicture: true
-                }
-            },
-            writerId: true
-        }
-    });
+export async function loader({ request, params }: LoaderFunctionArgs) {
 
-    if(!article) {
-        article = {
-            id: -1,
-            title: "",
-            intro: "",
-            coverImage: "",
-            content: JSON.stringify([]),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            writer: {
-                id: 0,
-                name: "New Writer",
-                profilePicture: "default.jpg"
+    // make sure the user is logged in
+    let user = await authenticator.isAuthenticated(request);
+    if (!user) { return redirect("/login") }
+
+    let article;
+    if(params.articleId === "new") {
+        //create a new article
+        article = await db.article.create({
+            data: {
+                title: "",
+                intro: "",
+                coverImage: "",
+                content: JSON.stringify([]),
+                writerId: user.id,
             },
-            writerId: 0
-        }
+        });
+        return  redirect("/editor/" + article.id.toString());
     }
+    // get the article data
+    let parsedID = parseInt(params.articleId as string);
+    if(parsedID){
+        article = await db.article.findUnique({
+            where: { id: parsedID },
+            select: {
+                id: true,
+                title: true,
+                intro: true,
+                coverImage: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                writer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        profilePicture: true
+                    }
+                },
+                writerId: true
+            }
+        });
+    }
+    else {
+        return redirect("/editor/new");
+    }
+    console.log("article", article)
+    if(!article) return redirect("/editor/new");
 
     return {article, articleId: params.articleId as string};
 }
@@ -134,17 +144,41 @@ export async function action({ request, params }: ActionFunctionArgs) {
         let intro = data.intro;
         let content = JSON.stringify(data.content);
 
-        // update the article data in the db
-        await db.article.update({
+        // check if the article exists
+        let article = await db.article.findUnique({
             where: {
                 id: parseInt(params.articleId as string),
             },
-            data: {
-                title,
-                intro,
-                content,
-            },
         });
+
+        console.log("content", content)
+
+        if (!article) {
+            // if the article does not exist then create a new one
+            const newArticle = await db.article.create({
+                data: {
+                    title,
+                    intro,
+                    content,
+                    writerId: user.id,
+                },
+            });
+            const newArticleId = newArticle.id;
+            //redirect to the article page
+            return redirect(`/article/${newArticleId}`);
+        } else {
+            // update the article data in the db
+            await db.article.update({
+                where: {
+                    id: parseInt(params.articleId as string),
+                },
+                data: {
+                    title,
+                    intro,
+                    content,
+                },
+            });
+        }
     }
     return { status: 200, headers: { "Content-Type": "application/json" } };
 }
@@ -241,14 +275,14 @@ const ElementAddingComponent = ({ addSelectedElement, elementAdding, toggleEleme
     return (
         <>
         <div className="flex justify-center mt-8">
-                <button onClick={() => {toggleElementAdding() }} className="text-white font-bold py-2 px-4 rounded animate-bounce-slow">
+                <button onClick={() => {toggleElementAdding() }} className="text-white font-bold py-2 px-4 rounded animate-bounce">
                     {!elementAdding &&
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 transition-all hover:scale-110">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     }
                     { elementAdding &&
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 transition-all hover:scale-110">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     }
@@ -258,23 +292,23 @@ const ElementAddingComponent = ({ addSelectedElement, elementAdding, toggleEleme
             <div className="mt-8 flex flex-row gap-8">
 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("he") }}>
-                    <TbHeading className="h-6 w-6 hover:animate-spin "/>
+                    <TbHeading className="h-6 w-6 "/>
                 </div>
 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("pa") }}>
-                    <BsTextParagraph className="h-6 w-6 hover:animate-spin"/>
+                    <BsTextParagraph className="h-6 w-6 "/>
                 </div>
 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("ol") }}>
-                    <GoListOrdered className="h-6 w-6 hover:animate-spin"/>
+                    <GoListOrdered className="h-6 w-6 "/>
                 </div>
 
                 <div className={elementAddingClasses}onClick={() => {toggleElementAdding(); addSelectedElement("ul") }}>
-                   <GoListUnordered className="h-6 w-6 hover:animate-spin"/>
+                   <GoListUnordered className="h-6 w-6 "/>
                 </div>
                 
                 <div className={elementAddingClasses} onClick={() => {toggleElementAdding(); addSelectedElement("im") }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 hover:animate-spin">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 ">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                     </svg>
                 </div>
@@ -351,6 +385,7 @@ export default function Editor() {
 
     const data = useLoaderData() as { article: any, articleId: string };
     let content = JSON.parse(data.article.content);
+    console.log(data)
 
     const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
     const [isCover, setIsCover] = React.useState(false);
@@ -462,10 +497,10 @@ export default function Editor() {
     const toggleElementAdding = () => {
         // toggle the classes
         if(elementAdding) {
-            setElementAddingClasses("element transition-opacity duration-500 opacity-0 mb-4 hover:scale-110")
+            setElementAddingClasses("element transition-opacity duration-500 opacity-0 mb-4 hover:scale-125")
         }
         else {
-            setElementAddingClasses("element transition-opacity duration-500 opacity-100 mb-4 hover:scale-110")
+            setElementAddingClasses("element transition-opacity duration-500 opacity-100 mb-4 hover:scale-125")
         }
         // toggle the state
         setElementAdding(!elementAdding);
@@ -493,7 +528,7 @@ export default function Editor() {
             <h1 className="">WTW Article Editor</h1>
             <div className="w-full flex flex-col items-center justify-center relative" >
                 <figure className="w-full h-full absolute dark-filter">
-                    <img src={`../assets/${data.article.coverImage}`} alt="cover" className="w-full h-full object-cover" />
+                    { data.article.coverImage && <img src={`../assets/${data.article.coverImage}`} alt="cover" className="w-full h-full object-cover" />}
                 </figure>
                 <div className="flex flex-col items-center w-1/2 py-60 relative">
                     <HeaderInput placeholder="glavni naslov" value={mainTitle} setValueForInput={(val, _)=>{setMainTitle(val)}} mainHeader={true} key={69} uniqueKey={69} />
@@ -521,7 +556,7 @@ export default function Editor() {
 
             <ElementAddingComponent addSelectedElement={addSelectedElement} elementAdding={elementAdding} toggleElementAdding={toggleElementAdding} elementAddingClasses={elementAddingClasses} />
 
-            <div className="p-10" ></div>
+            <div className="p-6" ></div>
 
             <button onClick={save} className="bg-green-500 text-white px-4 py-2 mb-4 rounded-md flex flex-row" >
                 <TfiSave className="w-6 h-6" />

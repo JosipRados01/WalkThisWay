@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import React from "react";
 import { Carousel } from "~/components/Carousel";
@@ -84,7 +84,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   });
 
-  if(!article) return {};
+  if(!article) return redirect('/404');
 
   //reformat the comments to have children
   const commentsWithChildren = reformatComments(article.comments);
@@ -105,6 +105,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   
   const identificator = user ? user.email : await getIp() || 'unknown';
 
+  console.log("viseclanaka")
+  console.log(moreArticles)
+
+  let categoryObject = article.category ? {
+    title: article.category.name,
+    articles: moreArticles
+  } : undefined;
+
   const articleObject = {
     articleId: params.articleId,
     title: article.title,
@@ -112,11 +120,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     cover: `../assets/${article.coverImage}`,
     content: content,
     comments: commentsWithChildren,
-    category: article.category ? {
-      title: article.category?.name,
-      articles: moreArticles,
-    }
-      : null,
+    category: categoryObject,
     likes: article.likes.length,
     likesArray: article.likes
   } as Article;

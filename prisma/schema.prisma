@@ -29,8 +29,8 @@ model Article {
   id          Int        @id @default(autoincrement())
   title       String?
   intro       String?
-  coverImage  String?
-  content     String
+  coverImage  String? 
+  content     String    @default("[]")
   status      String     @default("WIP")
   eventTime   DateTime?
   createdAt   DateTime   @default(now())
