@@ -3,7 +3,7 @@ import { ParallaxBanner } from "react-scroll-parallax"; // TODO: implement this
 
 export function Hero({cover, title, content}: {cover?: string, title?: string, content?: string}) {
     return (
-      <div className="relative flex-column flex-center h-screen text-white text-center rocker overflow-hidden">
+      <div className="relative flex-column flex-center h-screen text-white text-center rocker overflow-hidden w-full">
         <img src={ cover } alt="" className="parallaxImage h-screen w-full object-cover dark-filter" />
         <div className="absolute-center inset-0 text-shadow">
           <h1 className="mt-20 text-7xl pb-5">{ title }</h1>

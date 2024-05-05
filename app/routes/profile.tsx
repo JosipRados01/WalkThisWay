@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect, unstable_composeUploadHandlers, unstable_createFileUploadHandler, unstable_parseMultipartFormData } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, useNavigate } from "@remix-run/react";
 import React from "react";
+import { Carousel } from "~/components/Carousel";
 import { authenticator } from "~/services/auth.server";
 import type ProfileType from "~/types/profile";
 import { db } from "~/utils/db.server";
@@ -79,7 +80,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
         where: {
           id: user.id,
         },
+        include: {
+          articles: {
+            select: {
+              id: true,
+              title: true,
+              intro: true,
+              coverImage: true,
+            },
+            take: 10,
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+        },
       });
+
+      if(profile?.articles){
+        //here we give the article cover images the propper url
+        profile.articles = profile.articles.map(article => {
+          article.coverImage = `../assets/${article.coverImage}`;
+          return article;
+        });
+      }
     
       // return the user data
       return profile as ProfileType;
@@ -91,6 +114,7 @@ export default function Profile() {
 
     let [areSettingsVisible, setAreSettingsVisible] = React.useState(false);
     let [IsUpdateProfilePictureVisible, setIsUpdateProfilePictureVisible] = React.useState(false);
+    const navigate = useNavigate();
 
   return (
     <>
@@ -108,8 +132,19 @@ export default function Profile() {
           </div>
         </div>
           <button onClick={() => setAreSettingsVisible(!areSettingsVisible)} className="block text-white mt-8 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
-          Settings
+          Edit
         </button>
+
+        {user.articles && <Carousel name="Tvoji članci" articles={user.articles} />}
+
+        <button className="block text-white mt-8 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button"
+          onClick={() => navigate('/editor/new')}
+        >
+          Novi članak
+        </button>
+
+        <div className="p-10" ></div>
+
       </div>
 
       {areSettingsVisible && (
