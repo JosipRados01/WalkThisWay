@@ -30,6 +30,7 @@ type Article = {
   comments?: CommentType[];
   likes?: number;
   likesArray?: likeElement[];
+  status: string;
 };
 
 
@@ -49,6 +50,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       intro: true,
       content: true,
       coverImage: true,
+      status: true,
       categoryId: true,
       likes: true,
       comments: {
@@ -119,6 +121,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     intro: article.intro,
     cover: `../assets/${article.coverImage}`,
     content: content,
+    status: article.status,
     comments: commentsWithChildren,
     category: categoryObject,
     likes: article.likes.length,
@@ -205,6 +208,66 @@ export async function action({ request }: ActionFunctionArgs) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ message: "Comment added" }),
+      };
+    }
+  } else if(bodyJSON.action === "publish_article") {
+    let articleId = request.url.split("/").pop();
+    if(articleId){
+      await db.article.update({
+        where: {
+          id: parseInt(articleId)
+        },
+        data: {
+          status: "PUBLISHED"
+        }
+      });
+
+      return {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: "Article published" }),
+      };
+    }
+  } else if(bodyJSON.action === "article_to_wip") {
+    let articleId = request.url.split("/").pop();
+    if(articleId){
+      await db.article.update({
+        where: {
+          id: parseInt(articleId)
+        },
+        data: {
+          status: "WIP"
+        }
+      });
+
+      return {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: "Article set to WIP" }),
+      };
+    }
+  } else if(bodyJSON.action === "article_to_draft") {
+    let articleId = request.url.split("/").pop();
+    if(articleId){
+      await db.article.update({
+        where: {
+          id: parseInt(articleId)
+        },
+        data: {
+          status: "DRAFT"
+        }
+      });
+
+      return {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: "Article set to draft" }),
       };
     }
   }
@@ -352,6 +415,70 @@ function CommentForm({ parentCommentId, user, articleId, addCommentToState } : {
   )
 } 
 
+const PublisherControls = ({ articleId, articleStatus } : { articleId: string, articleStatus: string }) => {
+
+  const publishArticle = async (articleId: string) => {
+    try {
+      await fetch(`/articles/${articleId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "publish_article" }),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    // reload the page to show the updated article status
+    window.location.reload();
+  }
+
+  const articleToWIP = async (articleId: string) => {
+    try {
+      await fetch(`/articles/${articleId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "article_to_wip" }),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    // reload the page to show the updated article status
+    window.location.reload();
+  }
+
+  const articleToDraft = async (articleId: string) => {
+    try {
+      await fetch(`/articles/${articleId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "article_to_draft" }),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    // reload the page to show the updated article status
+    window.location.reload();
+  }
+
+  return (
+    <div className="flex flex-col">
+      { articleStatus === "DRAFT" ? 
+        <>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-5" onClick={() => {publishArticle(articleId)} } > Publish </button>
+          <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-5"  onClick={() => {articleToWIP(articleId)} }> Back to WIP </button>
+        </>
+        :
+        <button className={`${articleStatus === "WIP" ? "bg-blue-500 hover:bg-blue-700" : "bg-red-500 hover:bg-red-700"} text-white font-bold py-2 px-4 rounded mt-5`} onClick={() => {articleToDraft(articleId)} }> Make draft </button>
+      }
+    </div>
+  )
+}
+
 function Article() {
   const {article:data, user, identificator} = useLoaderData<{ article: Article, user: Profile, identificator: string }>();
   const [likes, setLikes] = React.useState(data.likes || 0);
@@ -434,9 +561,13 @@ function Article() {
       <Hero cover={data.cover} title={data.title} content={data.intro} />
       <div className="mt-10">
         <span className="ml-20 text-2xl">{likes}</span>
-        {liked ?
+        { liked ?
           <button className="bg-green-500 text-white font-bold py-2 px-4 rounded ml-5" disabled> Liked </button> :
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-5" onClick={handleLike}> Like </button>}
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-5" onClick={handleLike}> Like </button>
+        }
+        {
+          user && ["admin", "publisher"].includes(user.role as string) && <PublisherControls articleId={data.articleId} articleStatus={data.status} />
+        }
       </div>
       <ArticleContent content={data.content as ArticleContentType[]} />
       {data.category && <Carousel name={data.category.title} articles={data.category.articles} />}

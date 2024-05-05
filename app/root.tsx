@@ -72,7 +72,6 @@ function Layout({ children }: { children: React.ReactNode }) {
   let user = useLoaderData() as ProfileAuthFragment | null; 
   if (user) {
     links.push({ name: "Profile", url: "/profile" });
-    links.push({ name: "Logout", url: "/logout" });
     if (user.role === "admin") {
       links.push({ name: "Admin", url: "/admin" });
       links.push({ name: "Publish", url: "/publish" });
@@ -80,6 +79,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     if(user.role === "publisher") {
       links.push({ name: "Publish", url: "/publish" });
     }
+    links.push({ name: "Logout", url: "/logout" });
   } else {
     links.push({ name: "Login", url: "/login" });
     links.push({ name: "Register", url: "/register" });
